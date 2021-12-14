@@ -6,7 +6,7 @@ This is the docker image used by Fresh Store to run on Fresh Cloud.
 ## The Bitnami Source Repository
 This repository is forked from https://github.com/bitnami/bitnami-docker-laravel but will be quite different as it is further developed.
 
-The source repository is designed for development only.
+The source repository is for development only.
 
 Another good point of reference is this repository: https://github.com/laradock/laradock
 
