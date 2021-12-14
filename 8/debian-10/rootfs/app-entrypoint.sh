@@ -52,7 +52,8 @@ wait_for_db() {
     local -r db_port="${DB_PORT:-3306}"
     log "Port value $db_port"
     local db_address
-    db_address=$(getent hosts "$db_host" | awk '{ print $1 }')
+    #db_address=$(getent hosts "$db_host" | awk '{ print $1 }')
+    db_address=$db_host
     local counter=0
     log "Connecting to database at $db_address"
     while ! nc -z "$db_address" "$db_port" >/dev/null; do
