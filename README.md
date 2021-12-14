@@ -10,6 +10,11 @@ The source repository is for development only.
 
 Another good point of reference is this repository: https://github.com/laradock/laradock
 
+## Publish the docker image
+We store the image on Google Artifact Registry. See the fresh-store-k8s repository for how to set this up.
+
+
+
 ## Build the Docker Image Locally
 
 This will build with version 8 of Laravel

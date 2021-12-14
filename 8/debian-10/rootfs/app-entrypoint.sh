@@ -50,14 +50,14 @@ wait_for_db() {
     local db_address
     db_address=$(getent hosts "$db_host" | awk '{ print $1 }')
     local counter=0
-    log "Connecting to mariadb at $db_address"
+    log "Connecting to database at $db_address"
     while ! nc -z "$db_address" "$db_port" >/dev/null; do
         counter=$((counter + 1))
         if [ $counter == 30 ]; then
-            log "Error: Couldn't connect to mariadb."
+            log "Error: Couldn't connect to database."
             exit 1
         fi
-        log "Trying to connect to mariadb at $db_address. Attempt $counter."
+        log "Trying to connect to database at $db_address. Attempt $counter."
         sleep 5
     done
 }
@@ -69,7 +69,7 @@ wait_for_db() {
 #########################
 setup_db() {
     log "Setting up the database for the first time"
-    php artisan migrate --force
+    php artisan migrate:fresh --seed
     log "Database setup finished"
 }
 
@@ -89,7 +89,7 @@ else
     curl -L -o /tmp/fresh-store-github.zip https://"$GITHUB_TOKEN":x-oauth-basic@github.com/"$GITHUB_REPOSITORY"/archive/"$GITHUB_BRANCH".zip
 
     log "Extracting zip files to the temp directory"
-    mkdir /tmp/freshstorefiles
+    mkdir -p /tmp/freshstorefiles
     unzip -o -q /tmp/fresh-store-github.zip -d /tmp/freshstorefiles
 
     log "Copying Fresh Store files to the live directory"
@@ -107,12 +107,14 @@ else
     composer install
 
     log "Creating a blank .env file from the env template"
-    cp /app/.env.template /app/.env
+    cp /app/.env.example /app/.env
 
     log "Generating APP_KEY for Laravel"
     php artisan key:generate --ansi
 
+    log "Waiting for the database"
     wait_for_db
+    log "Starting database setup"
     setup_db
 
     log "Adding the .installed file to flag this Fresh Store is now installed"
