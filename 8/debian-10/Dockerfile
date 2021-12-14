@@ -33,4 +33,4 @@ EXPOSE 80 443
 WORKDIR /app
 USER bitnami
 ENTRYPOINT [ "/app-entrypoint.sh" ]
-CMD [ "php", "artisan", "serve", "--host=0.0.0.0", "--port=7777" ]
+CMD [ "nami", "start", "--foreground", "apache" ]
