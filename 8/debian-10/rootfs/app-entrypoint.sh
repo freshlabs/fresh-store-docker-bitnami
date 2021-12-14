@@ -68,45 +68,56 @@ wait_for_db() {
 # Returns: none
 #########################
 setup_db() {
-    log "Configuring the database"
+    log "Setting up the database for the first time"
     php artisan migrate --force
+    log "Database setup finished"
 }
 
 print_welcome_page
 
-if [ "${1}" == "php" ] && [ "$2" == "artisan" ] && [ "$3" == "serve" ]; then
-    if [[ ! -d /app/app ]]; then
-        log "Creating laravel application"
-        cp -a /tmp/app/. /app/
-        log "Regenerating APP_KEY"
-        php artisan key:generate --ansi
-    fi
 
-    log "Installing/Updating Laravel dependencies (composer)"
-    if [[ ! -d /app/vendor ]]; then
-        composer install
-        log "Dependencies installed"
-    else
-        composer update
-        log "Dependencies updated"
-    fi
+if [[ -f /app/.installed ]]; then
+
+    log "This is an existing Fresh Store"
+    log "Updating Fresh Store dependencies (composer)"
+    composer update
+
+else
+
+    log "This is a new install"
+    log "Downloading zip of Fresh Store latest version from Github"
+    curl -L -o /tmp/fresh-store-github.zip https://"$GITHUB_TOKEN":x-oauth-basic@github.com/"$GITHUB_REPOSITORY"/archive/"$GITHUB_BRANCH".zip
+
+    log "Extracting zip files to the temp directory"
+    mkdir /tmp/freshstorefiles
+    unzip -o -q /tmp/fresh-store-github.zip -d /tmp/freshstorefiles
+
+    log "Copying Fresh Store files to the live directory"
+    shopt -s dotglob
+    REPO_NAME="$(cut -d'/' -f2 <<<"$GITHUB_REPOSITORY")"
+    rsync -r /tmp/freshstorefiles/"$REPO_NAME"-"$GITHUB_BRANCH"/ /app/
+
+    log "Removing Fresh Store temp zip file and folder"
+    unlink /tmp/fresh-store-github.zip
+    rm -rf /tmp/freshstorefiles/"$REPO_NAME"-"$GITHUB_BRANCH"
+
+    log "Finished getting Fresh Store files from Github ($GITHUB_REPOSITORY:$GITHUB_BRANCH)"
+
+    log "Installing Fresh Store dependencies (composer)"
+    composer install
+
+    log "Creating a blank .env file from the env template"
+    cp /app/.env.template /app/.env
+
+    log "Generating APP_KEY for Laravel"
+    php artisan key:generate --ansi
 
     wait_for_db
+    setup_db
 
-    if [[ -f $INIT_SEM ]]; then
-        echo "#########################################################################"
-        echo "                                                                         "
-        echo " App initialization skipped:                                             "
-        echo " Delete the file $INIT_SEM and restart the container to reinitialize     "
-        echo " You can alternatively run specific commands using docker-compose exec   "
-        echo " e.g docker-compose exec myapp php artisan make:console FooCommand       "
-        echo "                                                                         "
-        echo "#########################################################################"
-    else
-        setup_db
-        log "Initialization finished"
-        touch $INIT_SEM
-    fi
+    log "Adding the .installed file to flag this Fresh Store is now installed"
+    touch /app/.installed
+
 fi
 
 exec tini -- "$@"
