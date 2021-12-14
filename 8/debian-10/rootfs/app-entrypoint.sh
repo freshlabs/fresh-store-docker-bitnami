@@ -45,8 +45,12 @@ replace_in_file() {
 # Returns: none
 #########################
 wait_for_db() {
+    log "Getting host value"
     local -r db_host="${DB_HOST:-mariadb}"
+    log "Host value $db_host"
+    log "Getting port value"
     local -r db_port="${DB_PORT:-3306}"
+    log "Port value $db_port"
     local db_address
     db_address=$(getent hosts "$db_host" | awk '{ print $1 }')
     local counter=0
