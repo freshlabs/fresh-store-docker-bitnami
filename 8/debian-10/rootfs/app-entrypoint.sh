@@ -84,8 +84,9 @@ print_welcome_page
 if [[ -f /app/.installed ]]; then
 
     log "This is an existing Fresh Store"
-    log "Updating Fresh Store dependencies (composer)"
-    composer update
+    log "No further action needed"
+    #log "Updating Fresh Store dependencies (composer)"
+    #composer update
 
 else
 
