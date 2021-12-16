@@ -3,3 +3,6 @@
 .idea/vcs.xml
 .idea/modules.xml
 .idea/fresh-store-docker.iml
+.idea/codeStyles/codeStyleConfig.xml
+.idea/fresh-store-docker-bitnami.iml
+.DS_Store
